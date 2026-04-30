@@ -1,117 +1,85 @@
 /**************************************************************
  **************************************************************
- **                                                          **
- ** script.js is where you will write most of your code.     **
- **                                                          **
+ ** script.js
  **************************************************************
  **************************************************************/
 
 const HTML_OUTPUT = document.getElementById("databaseOutput");
 
 /**************************************************************/
-// helloWorld()
-// Demonstrate a minimal write to firebase
-// This function replaces the entire database with the message "Hello World"
-// 
-// This uses the set() operation to write the key:value pair "message":"Hello World"
-// The ref('/') part tells the operation to write to the base level of the database "/"
-// This means it replaces the whole database with message:Hello World
-/**************************************************************/
-let lastBook = "null";
 
-
-libraryBooks = {
-  Books: {
-    "Book 1": {
-      Title: "Random Book",
-      Author: "Me",
-      Genre: "Non-Fiction",
-    },
-    "Book 2": {
-      Title: "Better Book",
-      Author: "Myself",
-      Genre: "Fiction",
-    },
-    "Book 3": {
-      Title: "Even Better Book",
-      Author: "I",
-      Genre: "Dystopian",
-    }
+let highScores = {
+  "Game 1": {
+    "Ben Britton": 3,
+    "Dwayne J": 300
+  },
+  "Game 2": {
+    "Ben Britton": 47,
+    "Dwayne J": 46
+  },
+  "Game 3": {
+    "Ben Britton": 100000,
+    "Dwayne J": 0
   }
+};
+
+
+firebase.database().ref('/').set(highScores);
+
+
+function fb_readHighScores() {
+
+  console.log("Reading High Scores");
+
+  firebase.database()
+    .ref('/')   // IMPORTANT: matches your structure now
+    .once('value', fb_displayHighScores, fb_readError);
 }
 
-firebase.database().ref('/').set(libraryBooks)
-function bookOne() {
-  console.log("Running bookOne()")
-
-  lastBook = "Books/Book 1"
-
-  firebase.database().ref('Books/Book 1').set(
-    {
-      Title: "Random Book",
-      Author: "Me",
-      Genre: "Non-Fiction",
-    }
-  )
-  listenToLastBook();
-}
-
-function bookTwo() {
-  console.log("Running bookTwo()")
-
-  lastBook = "Books/Book 2"
-
-  firebase.database().ref('Books/Book 2').set(
-    {
-      Title: "Better Book",
-      Author: "Myself",
-      Genre: "Fiction",
-    }
-  )
-  listenToLastBook();
-}
-
-function bookThree() {
-  console.log("Running bookThree()")
-
-  lastBook = "Books/Book 3"
-
-  firebase.database().ref('Books/Book 3').set(
-    {
-      Title: "Even Better Book",
-      Author: "I",
-      Genre: "Dystopian",
-    }
-  )
-  listenToLastBook();
-}
-
-function displayLastBookSelected(snapshot) {
-  let book = snapshot.val();
-
-  if (book == null) {
-    console.log("You haven't selected a book yet")
-
-    HTML_OUTPUT.innerHTML = "You haven't selected a book yet"
-  }
-  else {
-    console.log("Book data:", lastBook);
-
-    HTML_OUTPUT.innerHTML = `
-    Title: ${book.Title}<br>
-    Author: ${book.Author}<br>
-    Genre: ${book.Genre}
-  `;
-  }
-}
 
 function fb_readError(error) {
-  console.log("There was an error reading the message");
+  console.log("There was an error reading the data");
   console.error(error);
-  HTML_OUTPUT.innerHTML = "There was an error reading this message."
+  HTML_OUTPUT.innerHTML = "There was an error reading this data.";
 }
 
-function listenToLastBook() {
-  currentRef = firebase.database().ref(lastBook);
-  currentRef.on('value', displayLastBookSelected, fb_readError);
+
+function fb_displayHighScores(snapshot) {
+
+  let data = snapshot.val();
+
+  if (!data) {
+    console.log("No data returned from Firebase");
+    return;
+  }
+
+  let games = Object.keys(data);
+
+  for (let i = 0; i < games.length; i++) {
+
+    let game = games[i];
+
+    console.log(
+      game +
+      " | Ben Britton: " +
+      data[game]["Ben Britton"] +
+      " | Dwayne J: " +
+      data[game]["Dwayne J"]
+    );
+  }
+}
+
+
+let games = Object.keys(highScores);
+
+for (let i = 0; i < games.length; i++) {
+
+  let game = games[i];
+
+  console.log(
+    "Score " + i +
+    " is for " + game +
+    ". Ben: " + highScores[game]["Ben Britton"] +
+    ", Dwayne: " + highScores[game]["Dwayne J"]
+  );
 }
