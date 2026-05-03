@@ -11,15 +11,24 @@ const HTML_OUTPUT = document.getElementById("databaseOutput");
 let highScores = {
   "Game 1": {
     "Ben Britton": 3,
-    "Dwayne J": 300
+    "Dwayne": 300,
+    "Gary": 1300000,
+    "Patrick": 30,
+    "Spongebob": 31 
   },
   "Game 2": {
     "Ben Britton": 47,
-    "Dwayne J": 46
+    "Dwayne": 46,
+    "Gary": 130,
+    "Patrick": 300,
+    "Spongebob": 310 
   },
   "Game 3": {
     "Ben Britton": 100000,
-    "Dwayne J": 0
+    "Dwayne": 0,
+    "Gary": 132,
+    "Patrick": 307,
+    "Spongebob": 341 
   }
 };
 
@@ -31,9 +40,7 @@ function fb_readHighScores() {
 
   console.log("Reading High Scores");
 
-  firebase.database()
-    .ref('/')   // IMPORTANT: matches your structure now
-    .once('value', fb_displayHighScores, fb_readError);
+  firebase.database().ref('/Game 1').orderByValue().limitToLast(4).once('value', fb_displayHighScores, fb_readError);
 }
 
 
@@ -46,26 +53,19 @@ function fb_readError(error) {
 
 function fb_displayHighScores(snapshot) {
 
-  let data = snapshot.val();
+  let scores = [];
 
-  if (!data) {
-    console.log("No data returned from Firebase");
-    return;
-  }
+  snapshot.forEach(function(child) {
+    scores.push({
+      name: child.key,
+      score: child.val()
+    });
+  });
 
-  let games = Object.keys(data);
+  scores.reverse();
 
-  for (let i = 0; i < games.length; i++) {
-
-    let game = games[i];
-
-    console.log(
-      game +
-      " | Ben Britton: " +
-      data[game]["Ben Britton"] +
-      " | Dwayne J: " +
-      data[game]["Dwayne J"]
-    );
+  for (let i = 0; i < scores.length; i++) {
+    console.log(scores[i].name + " scored " + scores[i].score);
   }
 }
 
@@ -79,7 +79,28 @@ for (let i = 0; i < games.length; i++) {
   console.log(
     "Score " + i +
     " is for " + game +
-    ". Ben: " + highScores[game]["Ben Britton"] +
-    ", Dwayne: " + highScores[game]["Dwayne J"]
+    ". Ben Britton: " + highScores[game]["Ben Britton"] +
+    ", Dwayne: " + highScores[game]["Dwayne"]
   );
+}
+
+
+
+function fb_showOneScore(child){
+
+  let gameName = child.key;
+  let scores = child.val();
+
+  let players = Object.keys(scores);
+
+  for (let i = 0; i < players.length; i++) {
+
+    let player = players[i];
+
+    console.log(
+      gameName + " | " +
+      player + " got " +
+      scores[player] + " points"
+    );
+  }
 }
